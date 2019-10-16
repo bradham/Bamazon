@@ -62,15 +62,23 @@ function buyItem() {
 
             if (answers.units <= res[0].stock_quantity) {
                 console.log("Purchasing....");
+
+                //Get the total price of the order
+                var totalPrice = res[0].price * answers.units;
+
+                //Update the quantity in the database and tell the user the purchase price
                 var newQuantity = res[0].stock_quantity - answers.units;
                 connection.query(
                  "UPDATE products SET stock_quantity= " + newQuantity + " WHERE ? ", { item_id: answers.itemID }, function(err, res) {
                     if (err) throw err;
-                     console.log("updated: %d", newQuantity);
+
+                    console.log("updated: %d", newQuantity);
+                    console.log("Your total price is $%d", totalPrice); //total
 
                 });
             } else {
                 console.log("Not enough inventory");
+                buyItem();
 
             }
 
