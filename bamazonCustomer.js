@@ -27,9 +27,47 @@ function start() {
     var query = "SELECT * FROM products";
     connection.query(query, function (err, res) {
         for (var i = 0; i < res.length; i++) {
-            console.log(res[i].product_name);
+            
+            console.log(" Item #:     %d", res[i].item_id);
+            console.log(" Item Name:  %s", res[i].product_name);
+            console.log(" Price:      $%s", res[i].price);
+            console.log("----------------------------------");
+
         }
+    buyItem();
+    });
+    
+    //connection.end();
+}
+
+function buyItem() {
+    inquirer
+    .prompt([
+    {
+      name: "itemID",
+      type: "number",
+      message: "Which Item # would you like to buy?"
+    },
+    {
+        name: "units",
+        type: "number",
+        message: "How many would you like to buy?"
+    }
+    ])
+    .then(function(answers) {
+        console.log(answers);
+        var query = "SELECT * FROM products WHERE ?";
+        connection.query(query, { item_id: answers.itemID }, function(err, res) {
+    //     for (var i = 0; i < res.length; i++) {
+    //       console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
+    //     }
+    //     runSearch();
+        console.log("res: %s", JSON.stringify(res));
+
+       });
+
+        connection.end();
+
     });
 
-    connection.end();
 }
