@@ -58,6 +58,22 @@ function buyItem() {
         console.log(answers);
         var query = "SELECT * FROM products WHERE ?";
         connection.query(query, { item_id: answers.itemID }, function(err, res) {
+            if (err) throw err;
+
+            if (answers.units <= res[0].stock_quantity) {
+                console.log("Purchasing....");
+                var newQuantity = res[0].stock_quantity - answers.units;
+                connection.query(
+                 "UPDATE products SET stock_quantity= " + newQuantity + " WHERE ? ", { item_id: answers.itemID }, function(err, res) {
+                    if (err) throw err;
+                     console.log("updated: %d", newQuantity);
+
+                });
+            } else {
+                console.log("Not enough inventory");
+
+            }
+
     //     for (var i = 0; i < res.length; i++) {
     //       console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
     //     }
@@ -66,7 +82,7 @@ function buyItem() {
 
        });
 
-        connection.end();
+        //connection.end();
 
     });
 
