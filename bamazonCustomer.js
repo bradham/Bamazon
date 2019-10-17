@@ -1,3 +1,4 @@
+//Add packages to use
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
@@ -27,71 +28,77 @@ function start() {
     var query = "SELECT * FROM products";
     connection.query(query, function (err, res) {
         for (var i = 0; i < res.length; i++) {
-            
+
             console.log(" Item #:     %d", res[i].item_id);
             console.log(" Item Name:  %s", res[i].product_name);
             console.log(" Price:      $%s", res[i].price);
             console.log("----------------------------------");
 
         }
-    buyItem();
+        buyItem();
     });
-    
+
     //connection.end();
 }
 
 function buyItem() {
     inquirer
-    .prompt([
-    {
-      name: "itemID",
-      type: "number",
-      message: "Which Item # would you like to buy?"
-    },
-    {
-        name: "units",
-        type: "number",
-        message: "How many would you like to buy?"
-    }
-    ])
-    .then(function(answers) {
-        console.log(answers);
-        var query = "SELECT * FROM products WHERE ?";
-        connection.query(query, { item_id: answers.itemID }, function(err, res) {
-            if (err) throw err;
-
-            if (answers.units <= res[0].stock_quantity) {
-                console.log("Purchasing....");
-
-                //Get the total price of the order
-                var totalPrice = res[0].price * answers.units;
-
-                //Update the quantity in the database and tell the user the purchase price
-                var newQuantity = res[0].stock_quantity - answers.units;
-                connection.query(
-                 "UPDATE products SET stock_quantity= " + newQuantity + " WHERE ? ", { item_id: answers.itemID }, function(err, res) {
-                    if (err) throw err;
-
-                    console.log("updated: %d", newQuantity);
-                    console.log("Your total price is $%d", totalPrice); //total
-
-                });
-            } else {
-                console.log("Not enough inventory");
-                buyItem();
-
+        .prompt([
+            {
+                name: "itemID",
+                type: "number",
+                message: "Which Item # would you like to buy?"
+            },
+            {
+                name: "units",
+                type: "number",
+                message: "How many would you like to buy?"
             }
+        ])
+        .then(function (answers) {
+            //Debug returned values
+            //console.log(answers);
 
-    //     for (var i = 0; i < res.length; i++) {
-    //       console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
-    //     }
-    //     runSearch();
-        console.log("res: %s", JSON.stringify(res));
+            var query = "SELECT * FROM products WHERE ?";
 
-       });
+            //Send query to database
+            connection.query(query, { item_id: answers.itemID }, function (err, res) {
+                if (err) throw err;
 
-        //connection.end();
+                if (answers.units <= res[0].stock_quantity) {
+                    console.log("Purchasing....");
 
-    });
+                    //Get the total price of the order
+                    var totalPrice = res[0].price * answers.units;
+
+                    //Update the quantity in the database and tell the user the purchase price
+                    var newQuantity = res[0].stock_quantity - answers.units;
+                    connection.query(
+                        "UPDATE products SET stock_quantity= " + newQuantity + " WHERE ? ", { item_id: answers.itemID }, function (err, res) {
+                            if (err) throw err;
+
+                            //For debugging
+                            //console.log("updated: %d", newQuantity);
+
+                            console.log("Your total price is $%d", totalPrice); //total
+
+                            //return to choices after database is updated
+                            buyItem();
+
+                        });
+                } else {
+                    console.log("Not enough inventory");
+                    buyItem();
+
+                }
+                
+                //Debugging returned database object
+                //console.log("res: %s", JSON.stringify(res));
+
+            });
+
+            //connection.end();
+
+        });
 
 }
